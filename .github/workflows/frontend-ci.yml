@@ -42,7 +42,7 @@ jobs:
 
   frontend-build:
       runs-on: ubuntu-latest
-      run-on: [frontend-lint-test]
+      needs: [frontend-lint-test]
 
       steps:
       - name: Check out repository
