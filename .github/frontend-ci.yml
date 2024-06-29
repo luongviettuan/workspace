@@ -1,0 +1,65 @@
+name: frontend-ci
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - master
+  pull_request:
+    branches:
+      - master
+  
+env:
+  # Set Node.js Version
+  NODE_VERSION: '18.x'
+
+jobs:
+  frontend-lint-test:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Check out repository
+      uses: actions/checkout@v3
+
+    - name: Use Node.js '18.x' from env
+      uses: actions/setup-node@v3
+      with:
+        node-version: ${{env.NODE_VERSION}}
+        cache: 'npm'
+        cache-dependency-path: starter/frontend/package-lock.json
+
+    - name: Install Dependency
+      working-directory: starter/frontend
+      run: npm ci
+
+    - name: Lint
+      working-directory: starter/frontend
+      run: npm run lint
+
+    - name: Test
+      working-directory: starter/frontend
+      run: npm run test
+
+
+  frontend-build:
+      runs-on: ubuntu-latest
+      run-on: [frontend-lint-test]
+
+      steps:
+      - name: Check out repository
+        uses: actions/checkout@v3
+
+      - name: Use Node.js '18.x' from env
+        uses: actions/setup-node@v3
+        with:
+          node-version: ${{env.NODE_VERSION}}
+          cache: 'npm'
+          cache-dependency-path: starter/frontend/package-lock.json
+
+      - name: Build
+        working-directory: starter/frontend
+        run: |
+          docker build --build-arg=REACT_APP_MOVIE_API_URL=http://localhost:5000 --tag=mp-frontend:latest .
+          echo "build success"
+          docker run --name mp-frontend -p 3000:3000 -d mp-frontend
+          echo "run success"
+    
