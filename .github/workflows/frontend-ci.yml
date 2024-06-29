@@ -33,7 +33,7 @@ jobs:
 
     - name: Lint
       working-directory: starter/frontend
-      run: npm run lint --fix
+      run: npm run lint -- --fix
 
     - name: Test
       working-directory: starter/frontend
