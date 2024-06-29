@@ -49,14 +49,9 @@ jobs:
       - name: Check out repository
         uses: actions/checkout@v3
 
-      - name: Use Python '3.10' from env
-        uses: actions/setup-python@v5
-        with:
-          python-version: ${{env.PYTHON_VERSION}}
-
       - name: Build
         working-directory: starter/backend
         run: |
-          pipenv run serve
+          docker build --tag backend-service:latest .
           echo "run success"
     
