@@ -58,8 +58,8 @@ jobs:
       - name: Build
         working-directory: starter/frontend
         run: |
-          docker build --build-arg=REACT_APP_MOVIE_API_URL=http://localhost:5000 --tag=mp-frontend:latest .
+          docker build --build-arg=REACT_APP_MOVIE_API_URL=http://localhost:5000 --tag=frontend-service:latest .
           echo "build success"
-          docker run --name mp-frontend -p 3000:3000 -d mp-frontend
+          docker run --name frontend-service -p 3000:3000 -d frontend-service
           echo "run success"
     
