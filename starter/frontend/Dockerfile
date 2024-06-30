@@ -9,13 +9,10 @@ WORKDIR /app
 COPY package*.json ./
 
 # Install packages
-RUN npm ci
+RUN NODE_ENV=development npm ci
 
 # Copy code
 COPY . .
-
-# Chmod folder
-RUN chown -R app /app
 
 # Build the app
 RUN npm run build
