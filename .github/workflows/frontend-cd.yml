@@ -39,17 +39,6 @@ jobs:
     - name: Check out repository
       uses: actions/checkout@v3
 
-    # - name: Use Node.js '18.x' from env
-    #   uses: actions/setup-node@v3
-    #   with:
-    #     node-version: ${{env.NODE_VERSION}}
-    #     cache: 'npm'
-    #     cache-dependency-path: starter/frontend/package-lock.json
-
-    # - name: Install Dependency
-    #   working-directory: starter/frontend
-    #   run: npm ci
-
     - name: Configure AWS credentials
       uses: aws-actions/configure-aws-credentials@v2
       with:
@@ -67,6 +56,8 @@ jobs:
       env:
         REPO_NAME: frontend-service
       run: |
+        echo "secrets.AWS_USER_ID: "
+        echo ${{secrets.AWS_USER_ID}}
         docker build --build-arg=REACT_APP_MOVIE_API_URL=http://localhost:5000 --tag ${{secrets.AWS_USER_ID}}.dkr.ecr.us-east-1.amazonaws.com/$REPO_NAME:latest .
         docker push ${{secrets.AWS_USER_ID}}.dkr.ecr.us-east-1.amazonaws.com/$REPO_NAME:latest
 
