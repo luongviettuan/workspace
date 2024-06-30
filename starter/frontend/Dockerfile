@@ -14,6 +14,9 @@ RUN npm ci
 # Copy code
 COPY . .
 
+# Chmod folder
+RUN chown -R app /app
+
 # Build the app
 RUN npm run build
 
