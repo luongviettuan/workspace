@@ -3,17 +3,17 @@ on:
   workflow_dispatch:
   # push:
   #   branches:
-  #     - master
+  #     - main
   pull_request:
     branches:
-      - master
+      - main
   
 env:
   # Set Node.js Version
   NODE_VERSION: '18.x'
 
 jobs:
-  frontend-lint-test:
+  frontend-lint:
     runs-on: ubuntu-latest
 
     steps:
@@ -35,6 +35,24 @@ jobs:
       working-directory: starter/frontend
       run: npm run lint -- --fix
 
+  frontend-test:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Check out repository
+      uses: actions/checkout@v3
+
+    - name: Use Node.js '18.x' from env
+      uses: actions/setup-node@v3
+      with:
+        node-version: ${{env.NODE_VERSION}}
+        cache: 'npm'
+        cache-dependency-path: starter/frontend/package-lock.json
+
+    - name: Install Dependency
+      working-directory: starter/frontend
+      run: npm ci
+
     - name: Test
       working-directory: starter/frontend
       run: npm run test --passWithNoTests
@@ -42,7 +60,7 @@ jobs:
 
   frontend-build:
       runs-on: ubuntu-latest
-      needs: [frontend-lint-test]
+      needs: [frontend-lint, frontend-test]
 
       steps:
       - name: Check out repository
@@ -55,6 +73,10 @@ jobs:
           cache: 'npm'
           cache-dependency-path: starter/frontend/package-lock.json
 
+      - name: Install Dependency
+        working-directory: starter/frontend
+        run: npm ci
+        
       - name: Build
         working-directory: starter/frontend
         run: |

@@ -2,7 +2,7 @@ name: frontend-cd
 on:
   push:
     branches:
-      - master
+      - main
 
 env:
   NODE_VERSION: '18.x'
