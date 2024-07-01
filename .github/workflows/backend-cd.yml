@@ -1,4 +1,4 @@
-name: backend-ci
+name: backend-cd
 on:
   workflow_dispatch:
   pull_request:
@@ -8,6 +8,7 @@ on:
 env:
   # Set Python Version
   PYTHON_VERSION: '3.10'
+  REPO_NAME: backend-service
 
 jobs:
   backend-lint:
@@ -56,8 +57,7 @@ jobs:
       working-directory: starter/backend
       run: pipenv run test
 
-
-  backend-build:
+  backend-deployment:
       runs-on: ubuntu-latest
       needs: [backend-lint, backend-test]
 
@@ -65,9 +65,30 @@ jobs:
       - name: Check out repository
         uses: actions/checkout@v3
 
-      - name: Build
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-access-key-id: ${{secrets.AWS_ACCESS_KEY_ID}}
+          aws-secret-access-key: ${{secrets.AWS_SECRET_ACCESS_KEY}}
+          aws-session-token: ${{secrets.AWS_SESSION_TOKEN}}
+          aws-region: ${{env.AWS_REGION}}
+      
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
+          
+      - name: Build and Push Docker Image To ECR
         working-directory: starter/backend
         run: |
-          docker build --tag backend-service:latest .
-          echo "run success"
+          docker build --build-arg=REACT_APP_MOVIE_API_URL=http://localhost:5000 --tag ${{secrets.AWS_USER_ID}}.dkr.ecr.us-east-1.amazonaws.com/${{env.REPO_NAME}}:latest .
+          docker push ${{secrets.AWS_USER_ID}}.dkr.ecr.us-east-1.amazonaws.com/${{env.REPO_NAME}}:latest
+
+      - name: Configure Kubeconfig
+        run: aws eks update-kubeconfig --name ${{env.REPO_NAME}} --region ${{env.AWS_REGION}}
+
+      - name: Deploy Docker Image to Amazon EKS
+        working-directory: starter/backend/k8s
+        run: |
+            kustomize edit set image backend=${{secrets.AWS_USER_ID}}.dkr.ecr.us-east-1.amazonaws.com/${{env.REPO_NAME}}:latest
+            kustomize build | kubectl apply -f -
     

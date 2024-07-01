@@ -10,6 +10,29 @@ env:
   REPO_NAME: frontend-service
 
 jobs:
+  frontend-lint:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Check out repository
+      uses: actions/checkout@v3
+
+    - name: Use Node.js '18.x' from env
+      uses: actions/setup-node@v3
+      with:
+        node-version: ${{env.NODE_VERSION}}
+        cache: 'npm'
+        cache-dependency-path: starter/frontend/package-lock.json
+
+    - name: Install Dependency
+      working-directory: starter/frontend
+      run: npm ci
+      
+    - name: Lint
+      working-directory: starter/frontend
+      run: npm run lint -- --fix
+  
+
   frontend-test:
     runs-on: ubuntu-latest
 
@@ -32,9 +55,9 @@ jobs:
       working-directory: starter/frontend
       run: npm run test --passWithNoTests
   
-  frontend-build:
+  frontend-deployment:
     runs-on: ubuntu-latest
-    needs: [frontend-test]
+    needs: [frontend-lint, frontend-test]
     steps:
     
     - name: Check out repository
@@ -54,7 +77,6 @@ jobs:
         
     - name: Build and Push Docker Image To ECR
       working-directory: starter/frontend
-      
       run: |
         docker build --build-arg=REACT_APP_MOVIE_API_URL=http://localhost:5000 --tag ${{secrets.AWS_USER_ID}}.dkr.ecr.us-east-1.amazonaws.com/${{env.REPO_NAME}}:latest .
         docker push ${{secrets.AWS_USER_ID}}.dkr.ecr.us-east-1.amazonaws.com/${{env.REPO_NAME}}:latest
