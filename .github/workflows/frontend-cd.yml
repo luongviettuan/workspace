@@ -7,6 +7,7 @@ on:
 env:
   NODE_VERSION: '18.x'
   AWS_REGION: us-east-1
+  REPO_NAME: frontend-service
 
 jobs:
   frontend-test:
@@ -53,23 +54,17 @@ jobs:
         
     - name: Build and Push Docker Image To ECR
       working-directory: starter/frontend
-      env:
-        REPO_NAME: frontend-service
+      
       run: |
-        echo "secrets.AWS_USER_ID: "
-        echo ${{secrets.AWS_USER_ID}}
-        docker build --build-arg=REACT_APP_MOVIE_API_URL=http://localhost:5000 --tag ${{secrets.AWS_USER_ID}}.dkr.ecr.us-east-1.amazonaws.com/$REPO_NAME:latest .
-        docker push ${{secrets.AWS_USER_ID}}.dkr.ecr.us-east-1.amazonaws.com/$REPO_NAME:latest
+        docker build --build-arg=REACT_APP_MOVIE_API_URL=http://localhost:5000 --tag ${{secrets.AWS_USER_ID}}.dkr.ecr.us-east-1.amazonaws.com/${{env.REPO_NAME}}:latest .
+        docker push ${{secrets.AWS_USER_ID}}.dkr.ecr.us-east-1.amazonaws.com/${{env.REPO_NAME}}:latest
 
     - name: Configure Kubeconfig
-      run: aws eks update-kubeconfig --name $REPO_NAME --region ${{env.AWS_REGION}}
+      run: aws eks update-kubeconfig --name ${{env.REPO_NAME}} --region ${{env.AWS_REGION}}
 
     - name: Deploy Docker Image to Amazon EKS
       working-directory: starter/frontend/k8s
-      env:
-        IMAGE_TAG: latest
-        REPO_NAME: frontend
       run: |
-          kustomize edit set image frontend=${{secrets.AWS_USER_ID}}.dkr.ecr.us-east-1.amazonaws.com/$REPO_NAME:latest
+          kustomize edit set image frontend=${{secrets.AWS_USER_ID}}.dkr.ecr.us-east-1.amazonaws.com/${{env.REPO_NAME}}:latest
           kustomize build | kubectl apply -f -
           
