@@ -72,3 +72,4 @@ jobs:
       run: |
           kustomize edit set image frontend=${{secrets.AWS_USER_ID}}.dkr.ecr.us-east-1.amazonaws.com/$REPO_NAME:latest
           kustomize build | kubectl apply -f -
+          
