@@ -10,6 +10,7 @@ env:
   PYTHON_VERSION: '3.10'
   AWS_REGION: us-east-1
   REPO_NAME: backend-service
+  IMAGE_TAG: ${{GITHUB_SHA::7}}
 
 jobs:
   backend-lint:
@@ -81,8 +82,8 @@ jobs:
       - name: Build and Push Docker Image To ECR
         working-directory: starter/backend
         run: |
-          docker build --build-arg=REACT_APP_MOVIE_API_URL=http://localhost:5000 --tag ${{secrets.AWS_USER_ID}}.dkr.ecr.us-east-1.amazonaws.com/${{env.REPO_NAME}}:latest .
-          docker push ${{secrets.AWS_USER_ID}}.dkr.ecr.${{env.AWS_REGION}}.amazonaws.com/${{env.REPO_NAME}}:latest
+          docker build --build-arg=REACT_APP_MOVIE_API_URL=http://localhost:5000 --tag ${{secrets.AWS_USER_ID}}.dkr.ecr.us-east-1.amazonaws.com/${{env.REPO_NAME}}:${{env.IMAGE_TAG}} .
+          docker push ${{secrets.AWS_USER_ID}}.dkr.ecr.${{env.AWS_REGION}}.amazonaws.com/${{env.REPO_NAME}}:${{env.IMAGE_TAG}}
 
       - name: Configure Kubeconfig
         run: aws eks update-kubeconfig --name ${{env.REPO_NAME}} --region ${{env.AWS_REGION}}
@@ -90,6 +91,6 @@ jobs:
       - name: Deploy Docker Image to Amazon EKS
         working-directory: starter/backend/k8s
         run: |
-            kustomize edit set image backend=${{secrets.AWS_USER_ID}}.dkr.ecr.${{env.AWS_REGION}}.amazonaws.com/${{env.REPO_NAME}}:latest
+            kustomize edit set image backend=${{secrets.AWS_USER_ID}}.dkr.ecr.${{env.AWS_REGION}}.amazonaws.com/${{env.REPO_NAME}}:${{env.IMAGE_TAG}}
             kustomize build | kubectl apply -f -
     
