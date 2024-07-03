@@ -10,7 +10,7 @@ env:
   AWS_REGION: us-east-1
   REPO_NAME: frontend-service
   IMAGE_TAG: ${GITHUB_SHA::7}
-  API_URL: http://localhost:5000
+  API_URL: https://63120E8B031A93CCDEFF23B202749CBE.gr7.us-east-1.eks.amazonaws.com
 
 jobs:
   frontend-lint:
